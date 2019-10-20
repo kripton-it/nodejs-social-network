@@ -3,7 +3,9 @@ const User = require("../models/User");
 exports.home = (req, res) => {
   const { user } = req.session;
   if (!user) {
-    res.render("home-guest");
+    res.render("home-guest", {
+      errors: req.flash("errors") // удалит сразу после доступа
+    });
   } else {
     res.render("home-dashboard", {
       username: user.username
@@ -33,7 +35,10 @@ exports.login = async (req, res) => {
       res.redirect("/");
     });
   } catch (error) {
-    res.send(error);
+    req.flash("errors", error);
+    req.session.save(() => {
+      res.redirect("/");
+    });
   }
 };
 
