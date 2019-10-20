@@ -24,12 +24,22 @@ exports.register = (req, res) => {
 exports.login = async (req, res) => {
   const user = new User(req.body);
   try {
-    const result = await user.login();
+    await user.login();
     req.session.user = {
       name: user.data.username
     };
-    res.send(result);
+    // express-session doesn't support promises
+    req.session.save(() => {
+      res.redirect("/");
+    });
   } catch (error) {
     res.send(error);
   }
+};
+
+exports.logout = (req, res) => {
+  // express-session doesn't support promises
+  req.session.destroy(() => {
+    res.redirect("/");
+  });
 };
