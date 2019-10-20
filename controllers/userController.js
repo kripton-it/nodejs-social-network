@@ -13,3 +13,13 @@ exports.register = (req, res) => {
     res.send("No errors");
   }
 };
+
+exports.login = async (req, res) => {
+  const user = new User(req.body);
+  try {
+    const result = await user.login();
+    res.send(result);
+  } catch (error) {
+    res.send(error);
+  }
+};

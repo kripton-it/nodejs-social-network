@@ -69,4 +69,22 @@ User.prototype.register = function() {
   }
 };
 
+User.prototype.login = async function() {
+  const { username, password } = this.data;
+
+  return new Promise((resolve, reject) => {
+    this.cleanup();
+    try {
+      const user = await usersCollection.findOne({ username });
+      if (user && user.password === password) {
+        resolve("You are logged in successfully");
+      } else {
+        reject("Invalid username / password");
+      }
+    } catch(error) {
+      reject("Please try again later");
+    }
+  });
+};
+
 module.exports = User;
