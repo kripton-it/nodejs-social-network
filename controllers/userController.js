@@ -1,7 +1,12 @@
 const User = require("../models/User");
 
 exports.home = (req, res) => {
-  res.render("home-guest");
+  const { user } = req.session;
+  if (!user) {
+    res.render("home-guest");
+  } else {
+    res.send(`Welcome, ${user.name}`);
+  }
 };
 
 exports.register = (req, res) => {
@@ -18,6 +23,9 @@ exports.login = async (req, res) => {
   const user = new User(req.body);
   try {
     const result = await user.login();
+    req.session.user = {
+      name: user.data.username
+    };
     res.send(result);
   } catch (error) {
     res.send(error);
