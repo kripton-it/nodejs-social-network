@@ -1,3 +1,4 @@
+const usersCollection = require("../db").collection("users");
 const validator = require("validator");
 
 const User = function(data) {
@@ -38,10 +39,7 @@ User.prototype.validate = function() {
   if (username.length > 30) {
     this.errors.push("Your username cannot exceed 30 characters");
   }
-  if (
-    username.length > 0 &&
-    !validator.isAlphanumeric(username)
-  ) {
+  if (username.length > 0 && !validator.isAlphanumeric(username)) {
     this.errors.push("Your username can only contain letters and numbers");
   }
 
@@ -66,6 +64,9 @@ User.prototype.register = function() {
   this.validate();
   // Step 2: Only if step 1 is correct,
   //         save the data into a database
+  if (!this.errors.length) {
+    usersCollection.insertOne(this.data);
+  }
 };
 
 module.exports = User;
