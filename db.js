@@ -1,7 +1,7 @@
+const dotenv = require("dotenv");
 const mongodb = require("mongodb");
 
-const mongoСonnectionString =
-  "mongodb://qwerty:kripton123@cluster0-shard-00-00-uqn88.mongodb.net:27017,cluster0-shard-00-01-uqn88.mongodb.net:27017,cluster0-shard-00-02-uqn88.mongodb.net:27017/OurApp?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority";
+dotenv.config();
 
 const mongoConfig = {
   useNewUrlParser: true,
@@ -14,9 +14,8 @@ const mongoHandler = (error, client) => {
   } else {
     module.exports = client.db();
     const app = require("./app");
-    const port = process.env.PORT || 3000;
-    app.listen(port);
+    app.listen(process.env.PORT);
   }
 };
 
-mongodb.connect(mongoСonnectionString, mongoConfig, mongoHandler);
+mongodb.connect(process.env.CONNECTIONSTRING, mongoConfig, mongoHandler);
