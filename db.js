@@ -12,7 +12,7 @@ const mongoHandler = (error, client) => {
   if (error) {
     console.log("Error happened: ", error);
   } else {
-    module.exports = client.db();
+    module.exports = client;
     const app = require("./app");
     app.listen(process.env.PORT);
   }

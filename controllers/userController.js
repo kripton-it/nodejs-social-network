@@ -5,7 +5,9 @@ exports.home = (req, res) => {
   if (!user) {
     res.render("home-guest");
   } else {
-    res.send(`Welcome, ${user.name}`);
+    res.render("home-dashboard", {
+      username: user.username
+    });
   }
 };
 

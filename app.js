@@ -1,5 +1,6 @@
 const express = require("express");
 const session = require("express-session");
+const MongoStore = require("connect-mongo")(session);
 const router = require("./router");
 
 const app = express();
@@ -7,6 +8,9 @@ const app = express();
 app.use(
   session({
     secret: "NodeJS is so cool",
+    store: new MongoStore({
+      client: require("./db")
+    }),
     resave: false,
     saveUninitialized: false,
     cookie: {
