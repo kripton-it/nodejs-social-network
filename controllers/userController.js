@@ -4,12 +4,13 @@ exports.home = (req, res) => {
   const { user } = req.session;
   if (!user) {
     res.render("home-guest", {
-      loginErrors: req.flash("loginErrors") // удалит сразу после доступа
+      loginErrors: req.flash("loginErrors"), // удалит сразу после доступа
       regErrors: req.flash("regErrors")
     });
   } else {
     res.render("home-dashboard", {
-      username: user.username,
+      username: user.name,
+      avatar: user.avatar
     });
   }
 };
@@ -19,7 +20,8 @@ exports.register = async (req, res) => {
   try {
     await user.register();
     req.session.user = {
-      username: user.data.username
+      name: user.data.username,
+      avatar: user.avatar
     };
     req.session.save(() => {
       res.redirect("/");
@@ -39,7 +41,8 @@ exports.login = async (req, res) => {
   try {
     await user.login();
     req.session.user = {
-      name: user.data.username
+      name: user.data.username,
+      avatar: user.avatar
     };
     // express-session doesn't support promises
     req.session.save(() => {
