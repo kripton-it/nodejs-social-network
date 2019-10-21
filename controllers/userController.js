@@ -4,22 +4,33 @@ exports.home = (req, res) => {
   const { user } = req.session;
   if (!user) {
     res.render("home-guest", {
-      errors: req.flash("errors") // удалит сразу после доступа
+      loginErrors: req.flash("loginErrors") // удалит сразу после доступа
+      regErrors: req.flash("regErrors")
     });
   } else {
     res.render("home-dashboard", {
-      username: user.username
+      username: user.username,
     });
   }
 };
 
-exports.register = (req, res) => {
+exports.register = async (req, res) => {
   const user = new User(req.body);
-  user.register();
-  if (user.errors.length) {
-    res.send(user.errors);
-  } else {
-    res.send("No errors");
+  try {
+    await user.register();
+    req.session.user = {
+      username: user.data.username
+    };
+    req.session.save(() => {
+      res.redirect("/");
+    });
+  } catch(regErrors) {
+    regErrors.forEach(error => {
+      req.flash("regErrors", error);
+    });
+    req.session.save(() => {
+      res.redirect("/");
+    });
   }
 };
 
@@ -35,7 +46,7 @@ exports.login = async (req, res) => {
       res.redirect("/");
     });
   } catch (error) {
-    req.flash("errors", error);
+    req.flash("loginErrors", error);
     req.session.save(() => {
       res.redirect("/");
     });

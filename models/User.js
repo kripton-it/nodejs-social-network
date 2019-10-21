@@ -29,48 +29,75 @@ User.prototype.cleanup = function() {
 };
 
 User.prototype.validate = function() {
-  const { username, email, password } = this.data;
+  return new Promise(async (resolve, reject) => {
+    const { username, email, password } = this.data;
+  
+    if (username === "") {
+      this.errors.push("You must provide a username");
+    }
+    if (username.length > 0 && username.length < 3) {
+      this.errors.push("Your username must have at least 3 characters");
+    }
+    if (username.length > 30) {
+      this.errors.push("Your username cannot exceed 30 characters");
+    }
+    if (username.length > 0 && !validator.isAlphanumeric(username)) {
+      this.errors.push("Your username can only contain letters and numbers");
+    }
+  
+    if (!validator.isEmail(email)) {
+      this.errors.push("You must provide a valid email");
+    }
+  
+    if (password === "") {
+      this.errors.push("You must provide a password");
+    }
+    if (password.length > 0 && password.length < 12) {
+      this.errors.push("Your password must have at least 12 characters");
+    }
+    if (password.length > 50) {
+      this.errors.push("Your password cannot exceed 50 characters");
+    }
+  
+    // only if username is valid, then check if it is already taken
+    if (username.length >= 3 && username.length <= 30 && validator.isAlphanumeric(username)) {
+      const isUsernameExists = await usersCollection.findOne({ username });
+  
+      if (isUsernameExists) {
+        this.errors.push("That username is already taken");
+      }
+    }
+  
+    // only if email is valid, then check if it is already being used
+    if (validator.isEmail(email)) {
+      const isEmailExists = await usersCollection.findOne({ email });
+  
+      if (isEmailExists) {
+        this.errors.push("That email is already being used");
+      }
+    }
 
-  if (username === "") {
-    this.errors.push("You must provide a username");
-  }
-  if (username.length > 0 && username.length < 3) {
-    this.errors.push("Your username must have at least 3 characters");
-  }
-  if (username.length > 30) {
-    this.errors.push("Your username cannot exceed 30 characters");
-  }
-  if (username.length > 0 && !validator.isAlphanumeric(username)) {
-    this.errors.push("Your username can only contain letters and numbers");
-  }
-
-  if (!validator.isEmail(email)) {
-    this.errors.push("You must provide a valid email");
-  }
-
-  if (password === "") {
-    this.errors.push("You must provide a password");
-  }
-  if (password.length > 0 && password.length < 12) {
-    this.errors.push("Your password must have at least 12 characters");
-  }
-  if (password.length > 50) {
-    this.errors.push("Your password cannot exceed 50 characters");
-  }
-};
+    resolve();
+  });
+}
 
 User.prototype.register = function() {
-  // Step 1: Validate user data
-  this.cleanup();
-  this.validate();
-  // Step 2: Only if step 1 is correct,
-  //         save the data into a database
-  if (!this.errors.length) {
-    const salt = bcrypt.genSaltSync(10);
-    this.data.password = bcrypt.hashSync(this.data.password, salt);
-    usersCollection.insertOne(this.data);
-  }
-};
+  return new Promise(async (resolve, reject) => {
+    // Step 1: Validate user data
+    this.cleanup();
+    await this.validate();
+    // Step 2: Only if step 1 is correct,
+    //         save the data into a database
+    if (!this.errors.length) {
+      const salt = bcrypt.genSaltSync(10);
+      this.data.password = bcrypt.hashSync(this.data.password, salt);
+      await usersCollection.insertOne(this.data);
+      resolve();
+    } else {
+      reject(this.errors);
+    }
+  })
+}
 
 User.prototype.login = async function() {
   const { username, password } = this.data;
