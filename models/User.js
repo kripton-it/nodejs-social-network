@@ -104,7 +104,7 @@ User.prototype.register = function() {
 User.prototype.login = async function() {
   const { username, password } = this.data;
 
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     this.cleanup();
     try {
       const user = await usersCollection.findOne({ username });

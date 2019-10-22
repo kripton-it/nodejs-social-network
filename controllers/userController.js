@@ -1,17 +1,13 @@
 const User = require("../models/User");
 
 exports.home = (req, res) => {
-  const { user } = req.session;
-  if (!user) {
+  if (!req.session.user) {
     res.render("home-guest", {
       loginErrors: req.flash("loginErrors"), // удалит сразу после доступа
       regErrors: req.flash("regErrors")
     });
   } else {
-    res.render("home-dashboard", {
-      username: user.name,
-      avatar: user.avatar
-    });
+    res.render("home-dashboard");
   }
 };
 
@@ -26,7 +22,7 @@ exports.register = async (req, res) => {
     req.session.save(() => {
       res.redirect("/");
     });
-  } catch(regErrors) {
+  } catch (regErrors) {
     regErrors.forEach(error => {
       req.flash("regErrors", error);
     });
@@ -61,4 +57,15 @@ exports.logout = (req, res) => {
   req.session.destroy(() => {
     res.redirect("/");
   });
+};
+
+exports.mustBeLoggedIn = (req, res, next) => {
+  if (req.session.user) {
+    next();
+  } else {
+    req.flash("loginErrors", "You must be logged in to perform that action");
+    req.session.save(() => {
+      res.redirect("/");
+    });
+  }
 };
