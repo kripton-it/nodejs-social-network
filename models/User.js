@@ -1,11 +1,16 @@
-const usersCollection = require("../db").db().collection("users");
+const usersCollection = require("../db")
+  .db()
+  .collection("users");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const md5 = require("md5");
 
-const User = function(data) {
+const User = function(data, getAvatar = false) {
   this.data = data;
   this.errors = [];
+  if (getAvatar) {
+    this.getAvatar();
+  }
 };
 
 User.prototype.cleanup = function() {
@@ -32,7 +37,7 @@ User.prototype.cleanup = function() {
 User.prototype.validate = function() {
   return new Promise(async (resolve, reject) => {
     const { username, email, password } = this.data;
-  
+
     if (username === "") {
       this.errors.push("You must provide a username");
     }
@@ -45,11 +50,11 @@ User.prototype.validate = function() {
     if (username.length > 0 && !validator.isAlphanumeric(username)) {
       this.errors.push("Your username can only contain letters and numbers");
     }
-  
+
     if (!validator.isEmail(email)) {
       this.errors.push("You must provide a valid email");
     }
-  
+
     if (password === "") {
       this.errors.push("You must provide a password");
     }
@@ -59,20 +64,24 @@ User.prototype.validate = function() {
     if (password.length > 50) {
       this.errors.push("Your password cannot exceed 50 characters");
     }
-  
+
     // only if username is valid, then check if it is already taken
-    if (username.length >= 3 && username.length <= 30 && validator.isAlphanumeric(username)) {
+    if (
+      username.length >= 3 &&
+      username.length <= 30 &&
+      validator.isAlphanumeric(username)
+    ) {
       const isUsernameExists = await usersCollection.findOne({ username });
-  
+
       if (isUsernameExists) {
         this.errors.push("That username is already taken");
       }
     }
-  
+
     // only if email is valid, then check if it is already being used
     if (validator.isEmail(email)) {
       const isEmailExists = await usersCollection.findOne({ email });
-  
+
       if (isEmailExists) {
         this.errors.push("That email is already being used");
       }
@@ -80,7 +89,7 @@ User.prototype.validate = function() {
 
     resolve();
   });
-}
+};
 
 User.prototype.register = function() {
   return new Promise(async (resolve, reject) => {
@@ -98,8 +107,8 @@ User.prototype.register = function() {
     } else {
       reject(this.errors);
     }
-  })
-}
+  });
+};
 
 User.prototype.login = async function() {
   const { username, password } = this.data;
@@ -115,7 +124,7 @@ User.prototype.login = async function() {
       } else {
         reject("Invalid username / password");
       }
-    } catch(error) {
+    } catch (error) {
       reject("Please try again later");
     }
   });
@@ -123,6 +132,6 @@ User.prototype.login = async function() {
 
 User.prototype.getAvatar = function() {
   this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`;
-}
+};
 
 module.exports = User;
