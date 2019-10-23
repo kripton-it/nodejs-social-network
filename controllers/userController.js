@@ -17,7 +17,8 @@ exports.register = async (req, res) => {
     await user.register();
     req.session.user = {
       name: user.data.username,
-      avatar: user.avatar
+      avatar: user.avatar,
+      _id: user.data._id
     };
     req.session.save(() => {
       res.redirect("/");
@@ -38,7 +39,8 @@ exports.login = async (req, res) => {
     await user.login();
     req.session.user = {
       name: user.data.username,
-      avatar: user.avatar
+      avatar: user.avatar,
+      _id: user.data._id
     };
     // express-session doesn't support promises
     req.session.save(() => {

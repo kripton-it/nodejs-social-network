@@ -4,7 +4,7 @@ const userController = require("./controllers/userController");
 const postController = require("./controllers/postController");
 
 const { home, register, login, logout, mustBeLoggedIn } = userController;
-const { renderCreatePost } = postController;
+const { viewCreateScreen, create } = postController;
 
 // user related routes
 router.get("/", home);
@@ -13,6 +13,8 @@ router.post("/login", login);
 router.post("/logout", logout);
 
 // post related routes
-router.get("/create-post", mustBeLoggedIn, renderCreatePost);
+router.get("/create-post", mustBeLoggedIn, viewCreateScreen);
+router.post("/create-post", create);
+// router.post("/create-post", mustBeLoggedIn, create); ???
 
 module.exports = router;
