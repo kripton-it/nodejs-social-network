@@ -134,4 +134,29 @@ User.prototype.getAvatar = function() {
   this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`;
 };
 
+User.findByUsername = username => {
+  return new Promise(async (resolve, reject) => {
+    if (typeof username !== "string") {
+      reject();
+      return;
+    }
+
+    try {
+      const userDoc = await usersCollection.findOne({ username });
+      if (userDoc) {
+        const user = new User(userDoc, true);
+        resolve({
+          _id: user.data._id,
+          username: user.data.username,
+          avatar: user.avatar
+        });
+      } else {
+        reject();
+      }
+    } catch (error) {
+      reject();
+    }
+  });
+};
+
 module.exports = User;

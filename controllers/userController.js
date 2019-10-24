@@ -71,3 +71,20 @@ exports.mustBeLoggedIn = (req, res, next) => {
     });
   }
 };
+
+exports.ifUserExists = async (req, res, next) => {
+  try {
+    req.profileUser = await User.findByUsername(req.params.username);
+    next();
+  } catch (error) {
+    res.render("404");
+  }
+};
+
+exports.profilePostsScreen = (req, res) => {
+  const { username, avatar } = req.profileUser;
+  res.render("profile", {
+    username,
+    avatar
+  });
+};

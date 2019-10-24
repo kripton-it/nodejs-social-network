@@ -1,7 +1,7 @@
 const dotenv = require("dotenv");
-const mongodb = require("mongodb");
-
 dotenv.config();
+
+const mongodb = require("mongodb");
 
 const mongoConfig = {
   useNewUrlParser: true,
@@ -15,6 +15,7 @@ const mongoHandler = (error, client) => {
     module.exports = client;
     const app = require("./app");
     app.listen(process.env.PORT);
+    console.log(process.env.PORT);
   }
 };
 
