@@ -58,8 +58,8 @@ Post.prototype.create = function() {
       this.cleanup();
       this.validate();
       if (!this.errors.length) {
-        await postsCollection.insertOne(this.data);
-        resolve();
+        const response = await postsCollection.insertOne(this.data);
+        resolve(response.ops[0]._id);
       } else {
         reject(this.errors);
       }

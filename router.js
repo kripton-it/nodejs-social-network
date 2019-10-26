@@ -28,7 +28,7 @@ router.get("/create-post", mustBeLoggedIn, viewCreateScreen);
 router.post("/create-post", create);
 // router.post("/create-post", mustBeLoggedIn, create); ???
 router.get("/post/:id", viewSingle);
-router.get("/post/:id/edit", viewEditScreen);
-router.post("/post/:id/edit", edit);
+router.get("/post/:id/edit", mustBeLoggedIn, viewEditScreen);
+router.post("/post/:id/edit", mustBeLoggedIn, edit);
 
 module.exports = router;
