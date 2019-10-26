@@ -12,7 +12,7 @@ const {
   ifUserExists,
   profilePostsScreen
 } = userController;
-const { viewCreateScreen, create, viewSingle, viewEditScreen, edit } = postController;
+const { viewCreateScreen, create, viewSingle, viewEditScreen, edit, remove } = postController;
 
 // user related routes
 router.get("/", home);
@@ -30,5 +30,6 @@ router.post("/create-post", create);
 router.get("/post/:id", viewSingle);
 router.get("/post/:id/edit", mustBeLoggedIn, viewEditScreen);
 router.post("/post/:id/edit", mustBeLoggedIn, edit);
+router.post("/post/:id/delete", mustBeLoggedIn, remove);
 
 module.exports = router;

@@ -90,7 +90,7 @@ Post.prototype.cleanup = function() {
   const safeBody = sanitizeHTML(body.trim(), {
     allowedTags: [],
     allowedAttributes: []
-  })
+  });
 
   this.data = {
     title: safeTitle,
@@ -188,6 +188,24 @@ Post.findByAuthorId = authorId => {
   };
 
   return Post.query([matchOperation, sortOperation]);
+};
+
+Post.delete = (postId, userId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const post = await Post.findSingleById(postId, userId);
+      if (post.isVisitorOwner) {
+        await postsCollection.deleteOne({
+          _id: new ObjectID(postId)
+        });
+        resolve();
+      } else {
+        reject();
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
 };
 
 module.exports = Post;
