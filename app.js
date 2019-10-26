@@ -22,7 +22,10 @@ app.use(
 
 app.use(flash());
 
-const getUserFromSession = (req, res, next) => {
+const getUserFromRequest = (req, res, next) => {
+  // make flash messages available
+  res.locals.errors = req.flash("errors");
+  res.locals.success = req.flash("success");
   // make current user id available on the req object
   if (req.session.user) {
     req.visitorId = req.session.user._id;
@@ -34,7 +37,7 @@ const getUserFromSession = (req, res, next) => {
   next();
 };
 
-app.use(getUserFromSession);
+app.use(getUserFromRequest);
 
 const router = require("./router");
 

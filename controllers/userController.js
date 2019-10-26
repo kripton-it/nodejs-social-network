@@ -4,7 +4,6 @@ const Post = require("../models/Post");
 exports.home = (req, res) => {
   if (!req.session.user) {
     res.render("home-guest", {
-      loginErrors: req.flash("loginErrors"), // удалит сразу после доступа
       regErrors: req.flash("regErrors")
     });
   } else {
@@ -48,7 +47,7 @@ exports.login = async (req, res) => {
       res.redirect("/");
     });
   } catch (error) {
-    req.flash("loginErrors", error);
+    req.flash("errors", error);
     req.session.save(() => {
       res.redirect("/");
     });
@@ -66,7 +65,7 @@ exports.mustBeLoggedIn = (req, res, next) => {
   if (req.session.user) {
     next();
   } else {
-    req.flash("loginErrors", "You must be logged in to perform that action");
+    req.flash("errors", "You must be logged in to perform that action");
     req.session.save(() => {
       res.redirect("/");
     });
