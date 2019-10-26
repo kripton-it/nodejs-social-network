@@ -57,7 +57,7 @@ Post.prototype.validate = function() {
   }
 };
 
-Post.query = uniqueOperations => {
+Post.query = (uniqueOperations, visitorId) => {
   return new Promise(async (resolve, reject) => {
     const lookupOperation = {
       from: "users",
@@ -69,6 +69,7 @@ Post.query = uniqueOperations => {
       title: 1,
       body: 1,
       createdDate: 1,
+      authorId: "$author",
       author: {
         $arrayElemAt: ["$authorDocument", 0]
       }
@@ -82,9 +83,10 @@ Post.query = uniqueOperations => {
     const posts = await postsCollection.aggregate(aggOperations).toArray();
 
     posts.forEach(post => {
+      post.isVisitorOwner = post.authorId.equals(visitorId);
       post.author = {
         username: post.author.username,
-        avatar: new User(post.author, true).avatar
+        avatar: new User(post.author, true).avatar,
       };
     });
 
@@ -92,7 +94,7 @@ Post.query = uniqueOperations => {
   });
 };
 
-Post.findSingleById = postId => {
+Post.findSingleById = (postId, visitorId) => {
   return new Promise(async (resolve, reject) => {
     if (typeof postId !== "string" || !ObjectID.isValid(postId)) {
       reject();
@@ -105,7 +107,7 @@ Post.findSingleById = postId => {
           _id: new ObjectID(postId)
         }
       };
-      const posts = await Post.query([matchOperation]);
+      const posts = await Post.query([matchOperation], visitorId);
 
       if (posts.length) {
         resolve(posts[0]);
@@ -124,7 +126,7 @@ Post.findByAuthorId = authorId => {
       author: authorId
     }
   };
-  
+
   const sortOperation = {
     $sort: {
       // createdDate: 1 // по возрастанию
