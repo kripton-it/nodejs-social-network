@@ -3,6 +3,7 @@ const postsCollection = require("../db")
   .collection("posts");
 const { ObjectID } = require("mongodb");
 const User = require("./User");
+const sanitizeHTML = require("sanitize-html");
 
 const Post = function(data, userId, postId) {
   this.data = data;
@@ -46,7 +47,7 @@ Post.prototype.actuallyUpdate = function() {
       } else {
         resolve("failure");
       }
-    } catch(error) {
+    } catch (error) {
       reject(error);
     }
   });
@@ -81,9 +82,19 @@ Post.prototype.cleanup = function() {
 
   const { title, body } = this.data;
 
+  const safeTitle = sanitizeHTML(title.trim(), {
+    allowedTags: [],
+    allowedAttributes: {}
+  });
+
+  const safeBody = sanitizeHTML(body.trim(), {
+    allowedTags: [],
+    allowedAttributes: []
+  })
+
   this.data = {
-    title: title.trim(),
-    body: body.trim(),
+    title: safeTitle,
+    body: safeBody,
     createdDate: new Date(),
     author: new ObjectID(this.userId)
   };

@@ -22,7 +22,8 @@
   </p>
 
   <div class="body-content">
-    <%= post.body %>
+    <!-- DANGER! MUST PROVIDE SECURITY IN POST MODEL WITH SANITIZE-HTML -->
+    <%- filterUserHTML(post.body) %>
   </div>
 
 </div>

@@ -2,6 +2,8 @@ const express = require("express");
 const session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
 const flash = require("connect-flash");
+const markdown = require("marked");
+const sanitizeHTML = require("sanitize-html");
 
 const app = express();
 
@@ -22,7 +24,30 @@ app.use(
 
 app.use(flash());
 
-const getUserFromRequest = (req, res, next) => {
+const forEachTemplate = (req, res, next) => {
+  // make markdown function available
+  res.locals.filterUserHTML = content => {
+    return sanitizeHTML(markdown(content), {
+      allowedTags: [
+        "p",
+        "br",
+        "ul",
+        "ol",
+        "li",
+        "strong",
+        "bold",
+        "i",
+        "em",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6"
+      ],
+      allowedAttributes: {}
+    });
+  };
   // make flash messages available
   res.locals.errors = req.flash("errors");
   res.locals.success = req.flash("success");
@@ -37,7 +62,7 @@ const getUserFromRequest = (req, res, next) => {
   next();
 };
 
-app.use(getUserFromRequest);
+app.use(forEachTemplate);
 
 const router = require("./router");
 
