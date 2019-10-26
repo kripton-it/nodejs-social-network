@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Post = require("../models/Post");
 
 exports.home = (req, res) => {
   if (!req.session.user) {
@@ -81,10 +82,17 @@ exports.ifUserExists = async (req, res, next) => {
   }
 };
 
-exports.profilePostsScreen = (req, res) => {
-  const { username, avatar } = req.profileUser;
-  res.render("profile", {
-    username,
-    avatar
-  });
+exports.profilePostsScreen = async (req, res) => {
+  try {
+    const { _id, username, avatar } = req.profileUser;
+    // ask post model for posts by an author id
+    const posts = await Post.findByAuthorId(_id);
+    res.render("profile", {
+      username,
+      avatar,
+      posts
+    });
+  } catch(error) {
+    res.render("404");
+  }
 };

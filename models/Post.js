@@ -57,40 +57,29 @@ Post.prototype.validate = function() {
   }
 };
 
-Post.findSingleById = id => {
+Post.query = uniqueOperations => {
   return new Promise(async (resolve, reject) => {
-    if (typeof id !== "string" || !ObjectID.isValid(id)) {
-      reject();
-      return;
-    }
+    const lookupOperation = {
+      from: "users",
+      localField: "author",
+      foreignField: "_id",
+      as: "authorDocument"
+    };
+    const projectOperation = {
+      title: 1,
+      body: 1,
+      createdDate: 1,
+      author: {
+        $arrayElemAt: ["$authorDocument", 0]
+      }
+    };
+    const aggOperations = [
+      ...uniqueOperations,
+      { $lookup: lookupOperation },
+      { $project: projectOperation }
+    ];
 
-    const posts = await postsCollection
-      .aggregate([
-        {
-          $match: {
-            _id: new ObjectID(id)
-          }
-        },
-        {
-          $lookup: {
-            from: "users",
-            localField: "author",
-            foreignField: "_id",
-            as: "authorDocument"
-          }
-        },
-        {
-          $project: {
-            title: 1,
-            body: 1,
-            createdDate: 1,
-            author: {
-              $arrayElemAt: ["$authorDocument", 0]
-            }
-          }
-        }
-      ])
-      .toArray();
+    const posts = await postsCollection.aggregate(aggOperations).toArray();
 
     posts.forEach(post => {
       post.author = {
@@ -99,12 +88,51 @@ Post.findSingleById = id => {
       };
     });
 
-    if (posts.length) {
-      resolve(posts[0]);
-    } else {
+    resolve(posts);
+  });
+};
+
+Post.findSingleById = postId => {
+  return new Promise(async (resolve, reject) => {
+    if (typeof postId !== "string" || !ObjectID.isValid(postId)) {
       reject();
+      return;
+    }
+
+    try {
+      const matchOperation = {
+        $match: {
+          _id: new ObjectID(postId)
+        }
+      };
+      const posts = await Post.query([matchOperation]);
+
+      if (posts.length) {
+        resolve(posts[0]);
+      } else {
+        reject();
+      }
+    } catch (error) {
+      reject(error);
     }
   });
+};
+
+Post.findByAuthorId = authorId => {
+  const matchOperation = {
+    $match: {
+      author: authorId
+    }
+  };
+  
+  const sortOperation = {
+    $sort: {
+      // createdDate: 1 // по возрастанию
+      createdDate: -1 // по убыванию
+    }
+  };
+
+  return Post.query([matchOperation, sortOperation]);
 };
 
 module.exports = Post;
