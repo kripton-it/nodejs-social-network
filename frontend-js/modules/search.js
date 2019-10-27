@@ -1,4 +1,5 @@
 import axios from "axios";
+import DOMPurify from "dompurify";
 
 export default class Search {
   // 1. Select DOM elements
@@ -97,7 +98,7 @@ export default class Search {
 
   renderResultsHTML(posts) {
     if (posts.length) {
-      this.resultsArea.innerHTML = `
+      this.resultsArea.innerHTML = DOMPurify.sanitize(`
         <div class="list-group shadow-sm">
           <div class="list-group-item active">
             <strong>Search Results</strong> 
@@ -105,7 +106,7 @@ export default class Search {
           </div>
           ${posts.map(this.getResultTemplate).join("")}
         </div>
-      `;
+      `);
     } else {
       this.resultsArea.innerHTML = `
         <p class="alert alert-danger text-center shadow-sm">
