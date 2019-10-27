@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export default class Search {
   // 1. Select DOM elements
   // 2. Keep track of any useful data
@@ -6,8 +8,14 @@ export default class Search {
     this.openIcon = document.querySelector(".header-search-icon");
     this.overlay = document.querySelector(".search-overlay");
     this.closeIcon = this.overlay.querySelector(".close-live-search");
+    this.searchInput = this.overlay.querySelector(".live-search-field");
+    this.resultsArea = this.overlay.querySelector(".live-search-results");
+    this.loaderIcon = this.overlay.querySelector(".circle-loader");
+    this.typingWaitingTimer;
+    this.searchInputValue = "";
     this.onOpenIconClick = this.onOpenIconClick.bind(this);
     this.onCloseIconClick = this.onCloseIconClick.bind(this);
+    this.onKeyPress = this.onKeyPress.bind(this);
     this.addEventListeners();
   }
 
@@ -15,6 +23,7 @@ export default class Search {
   addEventListeners() {
     this.openIcon.addEventListener("click", this.onOpenIconClick);
     this.closeIcon.addEventListener("click", this.onCloseIconClick);
+    this.searchInput.addEventListener("keyup", this.onKeyPress);
   }
 
   // 4. Event handlers
@@ -28,13 +37,48 @@ export default class Search {
     this.closeOverlay();
   }
 
+  onKeyPress(evt) {
+    const value = this.searchInput.value;
+
+    if (value && value !== this.searchInputValue) {
+      clearTimeout(this.typingWaitingTimer);
+      this.showLoader();
+      this.typingWaitingTimer = setTimeout(() => {
+        this.sendRequest();
+      }, 5000);
+    }
+
+    this.searchInputValue = value;
+  }
+
   // 4. Methods
   openOverlay() {
     this.overlay.classList.add("search-overlay--visible");
+    setTimeout(() => {
+      this.searchInput.focus();
+    }, 30);
   }
 
   closeOverlay() {
     this.overlay.classList.remove("search-overlay--visible");
+  }
+
+  showLoader() {
+    this.loaderIcon.classList.add("circle-loader--visible");
+  }
+
+  hideLoader() {
+    this.loaderIcon.classList.remove("circle-loader--visible");
+  }
+
+  async sendRequest() {
+    try {
+      const response = await axios.post("/search", {
+        searchTerm: this.searchInput.value
+      });
+    } catch(error) {
+      
+    }
   }
 
   get template() {
@@ -51,7 +95,7 @@ export default class Search {
     <div class="search-overlay-bottom">
       <div class="container container--narrow py-3">
         <div class="circle-loader"></div>
-        <div class="live-search-results live-search-results--visible">
+        <div class="live-search-results">
           <div class="list-group shadow-sm">
             <div class="list-group-item active"><strong>Search Results</strong> (4 items found)</div>
 
