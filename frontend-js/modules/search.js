@@ -11,13 +11,10 @@ export default class Search {
     this.searchInput = document.querySelector(".live-search-field");
     this.resultsArea = document.querySelector(".live-search-results");
     this.loaderIcon = document.querySelector(".circle-loader");
-    /* this.closeIcon = this.overlay.querySelector(".close-live-search");
-    this.searchInput = this.overlay.querySelector(".live-search-field");
-    this.resultsArea = this.overlay.querySelector(".live-search-results");
-    this.loaderIcon = this.overlay.querySelector(".circle-loader"); */
     this.typingWaitingTimer;
     this.searchInputValue = "";
     this.openOverlay = this.openOverlay.bind(this);
+    this.onKeyPress = this.onKeyPress.bind(this);
     this.addEventListeners();
   }
 
@@ -36,22 +33,30 @@ export default class Search {
     });
 
     // sending request
-    this.searchInput.addEventListener("keyup", () => {
-      const value = this.searchInput.value;
-
-      if (value && value !== this.searchInputValue) {
-        clearTimeout(this.typingWaitingTimer);
-        this.showLoader();
-        this.typingWaitingTimer = setTimeout(() => {
-          this.sendRequest();
-        }, 5000);
-      }
-
-      this.searchInputValue = value;
-    });
+    this.searchInput.addEventListener("keyup", this.onKeyPress);
   }
 
   // 4. Methods
+  onKeyPress() {
+    const value = this.searchInput.value;
+
+    if (!value) {
+      clearTimeout(this.typingWaitingTimer);
+      this.hideLoader();
+      this.hideResultsArea();
+    }
+
+    if (value && value !== this.searchInputValue) {
+      clearTimeout(this.typingWaitingTimer);
+      this.showLoader();
+      this.hideResultsArea();
+      this.typingWaitingTimer = setTimeout(() => {
+        this.sendRequest();
+      }, 500);
+    }
+    this.searchInputValue = value;
+  }
+
   openOverlay() {
     this.overlay.classList.add("search-overlay--visible");
     setTimeout(() => {
@@ -67,8 +72,16 @@ export default class Search {
     this.loaderIcon.classList.add("circle-loader--visible");
   }
 
+  showResultsArea() {
+    this.resultsArea.classList.add("live-search-results--visible");
+  }
+
   hideLoader() {
     this.loaderIcon.classList.remove("circle-loader--visible");
+  }
+
+  hideResultsArea() {
+    this.resultsArea.classList.remove("live-search-results--visible");
   }
 
   sendRequest() {
@@ -77,12 +90,48 @@ export default class Search {
         searchTerm: this.searchInput.value
       })
       .then(response => {
-        console.log(response.data);
+        this.renderResultsHTML(response.data);
       })
       .catch(console.log);
   }
 
-  get template() {
+  renderResultsHTML(posts) {
+    if (posts.length) {
+      this.resultsArea.innerHTML = `
+        <div class="list-group shadow-sm">
+          <div class="list-group-item active">
+            <strong>Search Results</strong> 
+            (${posts.length} item${posts.length > 1 ? "s" : ""} found)
+          </div>
+          ${posts.map(this.getResultTemplate).join("")}
+        </div>
+      `;
+    } else {
+      this.resultsArea.innerHTML = `
+        <p class="alert alert-danger text-center shadow-sm">
+          Sorry, we could not find anything for this request
+        </p>
+      `;
+    }
+    this.hideLoader();
+    this.showResultsArea();
+  }
+
+  getResultTemplate({ author, title, createdDate, _id }) {
+    const { avatar, username } = author;
+    const postDate = new Date(createdDate);
+    return `
+      <a href="/post/${_id}" class="list-group-item list-group-item-action">
+        <img class="avatar-tiny" src="${avatar}"> <strong>${title}</strong>
+        <span class="text-muted small">
+          by ${username} on ${postDate.getMonth() +
+      1}/${postDate.getDate()}/${postDate.getFullYear()}
+        </span>
+      </a>
+    `;
+  }
+
+  get overlayTemplate() {
     return `
     <div class="search-overlay">
     <div class="search-overlay-top shadow-sm">
@@ -96,28 +145,7 @@ export default class Search {
     <div class="search-overlay-bottom">
       <div class="container container--narrow py-3">
         <div class="circle-loader"></div>
-        <div class="live-search-results">
-          <div class="list-group shadow-sm">
-            <div class="list-group-item active"><strong>Search Results</strong> (4 items found)</div>
-
-            <a href="#" class="list-group-item list-group-item-action">
-              <img class="avatar-tiny" src="https://gravatar.com/avatar/b9216295c1e3931655bae6574ac0e4c2?s=128"> <strong>Example Post #1</strong>
-              <span class="text-muted small">by barksalot on 0/14/2019</span>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action">
-              <img class="avatar-tiny" src="https://gravatar.com/avatar/b9408a09298632b5151200f3449434ef?s=128"> <strong>Example Post #2</strong>
-              <span class="text-muted small">by brad on 0/12/2019</span>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action">
-              <img class="avatar-tiny" src="https://gravatar.com/avatar/b9216295c1e3931655bae6574ac0e4c2?s=128"> <strong>Example Post #3</strong>
-              <span class="text-muted small">by barksalot on 0/14/2019</span>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action">
-              <img class="avatar-tiny" src="https://gravatar.com/avatar/b9408a09298632b5151200f3449434ef?s=128"> <strong>Example Post #4</strong>
-              <span class="text-muted small">by brad on 0/12/2019</span>
-            </a>
-          </div>
-        </div>
+        <div class="live-search-results"></div>
       </div>
     </div>
   </div>  
@@ -125,6 +153,6 @@ export default class Search {
   }
 
   insertHTML() {
-    document.body.insertAdjacentHTML("beforeend", this.template);
+    document.body.insertAdjacentHTML("beforeend", this.overlayTemplate);
   }
 }
