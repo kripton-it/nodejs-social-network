@@ -12,7 +12,7 @@ exports.create = async (req, res) => {
     req.session.save(() => {
       res.redirect(`/post/${createdPostId}`);
     });
-  } catch(errors) {
+  } catch (errors) {
     errors.forEach(error => {
       req.flash("errors", error);
     });
@@ -78,29 +78,12 @@ exports.edit = async (req, res) => {
 };
 
 exports.remove = async (req, res) => {
-  // const post = new Post(req.body, req.visitorId, req.params.id);
   try {
     await Post.delete(req.params.id, req.visitorId);
     req.flash("success", "Post was successfully deleted");
     req.session.save(() => {
       res.redirect(`/profile/${req.session.user.name}`);
     });
-    /* if (status === "success") {
-      // post was deleted from db
-      // res.send("Post updated");
-      req.flash("success", "Post was successfully deleted");
-      req.session.save(() => {
-        res.redirect(`/profile/${req.session.user.name}`);
-      });
-    } else {
-      // user did have permission, but there were validation errors
-      post.errors.forEach(error => {
-        req.flash("errors", error);
-      });
-      req.session.save(() => {
-        res.redirect(`/post/${req.params.id}/edit`);
-      });
-    } */
   } catch (errors) {
     // a post doesn't exist
     // current visitor is not the owner of the post
@@ -108,5 +91,14 @@ exports.remove = async (req, res) => {
     req.session.save(() => {
       res.redirect("/");
     });
+  }
+};
+
+exports.search = async (req, res) => {
+  try {
+    const posts = await Post.search(req.body.searchTerm);
+    res.json(posts);
+  } catch (error) {
+    res.json([]);
   }
 };

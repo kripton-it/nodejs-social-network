@@ -137,6 +137,8 @@ Post.query = (uniqueOperations, visitorId) => {
 
     posts.forEach(post => {
       post.isVisitorOwner = post.authorId.equals(visitorId);
+      // no need more
+      post.authorId = undefined;
       post.author = {
         username: post.author.username,
         avatar: new User(post.author, true).avatar
@@ -202,6 +204,37 @@ Post.delete = (postId, userId) => {
       } else {
         reject();
       }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+Post.search = searchTerm => {
+  return new Promise(async (resolve, reject) => {
+    if (typeof searchTerm !== "string") {
+      reject();
+      return;
+    }
+    try {
+      const matchOperation = {
+        $match: {
+          // поиск по наличию подстроки
+          $text: {
+            $search: searchTerm
+          }
+        }
+      };
+      const sortOperation = {
+        $sort: {
+          // сортировка результатов поиска по релевантности
+          score: {
+            $meta: "textScore"
+          }
+        }
+      };
+      const posts = await Post.query([matchOperation, sortOperation]);
+      resolve(posts);
     } catch (error) {
       reject(error);
     }

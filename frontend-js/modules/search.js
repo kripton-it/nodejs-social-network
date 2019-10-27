@@ -7,48 +7,48 @@ export default class Search {
     this.insertHTML();
     this.openIcon = document.querySelector(".header-search-icon");
     this.overlay = document.querySelector(".search-overlay");
-    this.closeIcon = this.overlay.querySelector(".close-live-search");
+    this.closeIcon = document.querySelector(".close-live-search");
+    this.searchInput = document.querySelector(".live-search-field");
+    this.resultsArea = document.querySelector(".live-search-results");
+    this.loaderIcon = document.querySelector(".circle-loader");
+    /* this.closeIcon = this.overlay.querySelector(".close-live-search");
     this.searchInput = this.overlay.querySelector(".live-search-field");
     this.resultsArea = this.overlay.querySelector(".live-search-results");
-    this.loaderIcon = this.overlay.querySelector(".circle-loader");
+    this.loaderIcon = this.overlay.querySelector(".circle-loader"); */
     this.typingWaitingTimer;
     this.searchInputValue = "";
-    this.onOpenIconClick = this.onOpenIconClick.bind(this);
-    this.onCloseIconClick = this.onCloseIconClick.bind(this);
-    this.onKeyPress = this.onKeyPress.bind(this);
+    this.openOverlay = this.openOverlay.bind(this);
     this.addEventListeners();
   }
 
   // 3. Events listening
   addEventListeners() {
-    this.openIcon.addEventListener("click", this.onOpenIconClick);
-    this.closeIcon.addEventListener("click", this.onCloseIconClick);
-    this.searchInput.addEventListener("keyup", this.onKeyPress);
-  }
+    // open overlay
+    this.openIcon.addEventListener("click", evt => {
+      evt.preventDefault();
+      this.openOverlay();
+    });
 
-  // 4. Event handlers
-  onOpenIconClick(evt) {
-    evt.preventDefault();
-    this.openOverlay();
-  }
+    // close overlay
+    this.closeIcon.addEventListener("click", evt => {
+      evt.preventDefault();
+      this.closeOverlay();
+    });
 
-  onCloseIconClick(evt) {
-    evt.preventDefault();
-    this.closeOverlay();
-  }
+    // sending request
+    this.searchInput.addEventListener("keyup", () => {
+      const value = this.searchInput.value;
 
-  onKeyPress(evt) {
-    const value = this.searchInput.value;
+      if (value && value !== this.searchInputValue) {
+        clearTimeout(this.typingWaitingTimer);
+        this.showLoader();
+        this.typingWaitingTimer = setTimeout(() => {
+          this.sendRequest();
+        }, 5000);
+      }
 
-    if (value && value !== this.searchInputValue) {
-      clearTimeout(this.typingWaitingTimer);
-      this.showLoader();
-      this.typingWaitingTimer = setTimeout(() => {
-        this.sendRequest();
-      }, 5000);
-    }
-
-    this.searchInputValue = value;
+      this.searchInputValue = value;
+    });
   }
 
   // 4. Methods
@@ -71,14 +71,15 @@ export default class Search {
     this.loaderIcon.classList.remove("circle-loader--visible");
   }
 
-  async sendRequest() {
-    try {
-      const response = await axios.post("/search", {
+  sendRequest() {
+    axios
+      .post("/search", {
         searchTerm: this.searchInput.value
-      });
-    } catch(error) {
-      
-    }
+      })
+      .then(response => {
+        console.log(response.data);
+      })
+      .catch(console.log);
   }
 
   get template() {
