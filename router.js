@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const userController = require("./controllers/userController");
 const postController = require("./controllers/postController");
+const followController = require("./controllers/followController");
 
 const {
   home,
@@ -21,6 +22,7 @@ const {
   remove,
   search
 } = postController;
+const { addFollow } = followController;
 
 // user related routes
 router.get("/", home);
@@ -39,5 +41,8 @@ router.get("/post/:id/edit", mustBeLoggedIn, viewEditScreen);
 router.post("/post/:id/edit", mustBeLoggedIn, edit);
 router.post("/post/:id/delete", mustBeLoggedIn, remove);
 router.post("/search", search);
+
+// follow related routes
+router.post("/addFollow/:username", mustBeLoggedIn, addFollow);
 
 module.exports = router;
