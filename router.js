@@ -11,7 +11,8 @@ const {
   logout,
   mustBeLoggedIn,
   ifUserExists,
-  profilePostsScreen
+  profilePostsScreen,
+  sharedProfileData
 } = userController;
 const {
   viewCreateScreen,
@@ -22,7 +23,7 @@ const {
   remove,
   search
 } = postController;
-const { addFollow } = followController;
+const { addFollow, removeFollow } = followController;
 
 // user related routes
 router.get("/", home);
@@ -31,7 +32,7 @@ router.post("/login", login);
 router.post("/logout", logout);
 
 // profile related routes
-router.get("/profile/:username", ifUserExists, profilePostsScreen);
+router.get("/profile/:username", ifUserExists, sharedProfileData, profilePostsScreen);
 
 // post related routes
 router.get("/create-post", mustBeLoggedIn, viewCreateScreen);
@@ -44,5 +45,6 @@ router.post("/search", search);
 
 // follow related routes
 router.post("/addFollow/:username", mustBeLoggedIn, addFollow);
+router.post("/removeFollow/:username", mustBeLoggedIn, removeFollow);
 
 module.exports = router;
