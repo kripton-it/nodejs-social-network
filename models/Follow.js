@@ -149,4 +149,68 @@ Follow.getFollowersById = function(id) {
   });
 };
 
+Follow.getFollowingById = function(id) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const matchOperation = {
+        authorId: id
+      };
+      const lookupOperation = {
+        from: "users",
+        localField: "followedId",
+        foreignField: "_id",
+        as: "followingDocument"
+      };
+      const projectOperation = {
+        username: {
+          $arrayElemAt: ["$followingDocument.username", 0]
+        },
+        email: {
+          $arrayElemAt: ["$followingDocument.email", 0]
+        }
+      };
+      const aggOperations = [
+        { $match: matchOperation },
+        { $lookup: lookupOperation },
+        { $project: projectOperation }
+      ];
+      const following = await followersCollection
+        .aggregate(aggOperations)
+        .toArray();
+      if (followers) {
+        const followingWithAvatars = following.map(followUser => {
+          const user = new User(followUser, true);
+          return {
+            username: followUser.username,
+            avatar: user.avatar
+          };
+        });
+        resolve(followingWithAvatars);
+      } else {
+        reject();
+      }
+    } catch {
+      reject();
+    }
+  });
+};
+
+Follow.countFollowersByAuthor = id => {
+  return new Promise(async (resolve, reject) => {
+    const count = await followersCollection.countDocuments({
+      followedId: id
+    });
+    resolve(count);
+  });
+};
+
+Follow.countFollowingByAuthor = id => {
+  return new Promise(async (resolve, reject) => {
+    const count = await followersCollection.countDocuments({
+      authorId: id
+    });
+    resolve(count);
+  });
+};
+
 module.exports = Follow;

@@ -92,7 +92,9 @@ exports.profilePostsScreen = async (req, res) => {
       avatar,
       posts,
       isFollowing: req.isFollowing,
-      isVisitorsProfile: req.isVisitorsProfile
+      isVisitorsProfile: req.isVisitorsProfile,
+      currentPage: "posts",
+      count: req.count
     });
   } catch (error) {
     res.render("404");
@@ -109,7 +111,28 @@ exports.profileFollowersScreen = async (req, res) => {
       avatar,
       followers,
       isFollowing: req.isFollowing,
-      isVisitorsProfile: req.isVisitorsProfile
+      isVisitorsProfile: req.isVisitorsProfile,
+      currentPage: "followers",
+      count: req.count
+    });
+  } catch {
+    res.render("404");
+  }
+};
+
+exports.profileFollowingScreen = async (req, res) => {
+  try {
+    const { _id, username, avatar } = req.profileUser;
+    // ask follow model for users which that user is following
+    const following = await Follow.getFollowingById(_id);
+    res.render("profile-following", {
+      username,
+      avatar,
+      following,
+      isFollowing: req.isFollowing,
+      isVisitorsProfile: req.isVisitorsProfile,
+      currentPage: "following",
+      count: req.count
     });
   } catch {
     res.render("404");
@@ -121,13 +144,32 @@ exports.sharedProfileData = async (req, res, next) => {
   let isFollowing = false;
   if (req.session.user) {
     isVisitorsProfile = req.profileUser._id.equals(req.session.user._id);
-    isFollowing = await Follow.isVisitorFollowing(
-      req.profileUser._id,
-      req.visitorId
-    );
+    try {
+      isFollowing = await Follow.isVisitorFollowing(
+        req.profileUser._id,
+        req.visitorId
+      );
+    } catch {}
   }
 
   req.isVisitorsProfile = isVisitorsProfile;
   req.isFollowing = isFollowing;
+
+  // retrieve posts, followers and following counts
+  let postsCount = 0;
+  let followersCount = 0;
+  let followingCount = 0;
+  try {
+    [postsCount, followersCount, followingCount] = await Promise.all([
+      Post.countPostsByAuthor(req.profileUser._id),
+      Follow.countFollowersByAuthor(req.profileUser._id),
+      Follow.countFollowingByAuthor(req.profileUser._id)
+    ]);
+  } catch {}
+  req.count = {
+    posts: postsCount,
+    followers: followersCount,
+    following: followingCount
+  };
   next();
 };

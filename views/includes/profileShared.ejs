@@ -17,13 +17,25 @@
 </h2>
 
 <div class="profile-nav nav nav-tabs pt-2 mb-4">
-  <a href="/profile/<%= username %>" class="profile-nav-link nav-item nav-link active">
-    Posts: <%= posts.length %>
+  <a
+    href="/profile/<%= username %>" 
+    class="profile-nav-link nav-item nav-link
+    <%= currentPage === "posts" ? " active" : "" %>"
+  >
+    Posts: <%= count.posts %>
   </a>
-  <a href="/profile/<%= username %>/followers" class="profile-nav-link nav-item nav-link ">
-    Followers: 3
+  <a
+    href="/profile/<%= username %>/followers"
+    class="profile-nav-link nav-item nav-link
+    <%= currentPage === "followers" ? " active" : "" %>"
+  >
+    Followers: <%= count.followers %>
   </a>
-  <a href="/profile/<%= username %>/following" class="profile-nav-link nav-item nav-link ">
-    Following: 2
+  <a
+    href="/profile/<%= username %>/following"
+    class="profile-nav-link nav-item nav-link
+    <%= currentPage === "following" ? " active" : "" %>"
+  >
+    Following: <%= count.following %>
   </a>
 </div>
