@@ -5,6 +5,7 @@ const followsCollection = require("../db")
   .db()
   .collection("follows");
 const { ObjectID } = require("mongodb");
+const User = require("./User");
 
 const Follow = function(followedUsername, authorId) {
   this.followedUsername = followedUsername;
@@ -40,7 +41,9 @@ Follow.prototype.validate = async function(action) {
   }
   if (!followDoc && action === "delete") {
     // follow already exists - error
-    this.errors.push("You are not following this user, so you cannot stop following him");
+    this.errors.push(
+      "You are not following this user, so you cannot stop following him"
+    );
   }
 
   // should not be able to follow yourself
@@ -98,6 +101,52 @@ Follow.isVisitorFollowing = async function(followedId, visitorId) {
   });
 
   return !!followDoc;
+};
+
+Follow.getFollowersById = function(id) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const matchOperation = {
+        followedId: id
+      };
+      const lookupOperation = {
+        from: "users",
+        localField: "authorId",
+        foreignField: "_id",
+        as: "followerDocument"
+      };
+      const projectOperation = {
+        username: {
+          $arrayElemAt: ["$followerDocument.username", 0]
+        },
+        email: {
+          $arrayElemAt: ["$followerDocument.email", 0]
+        }
+      };
+      const aggOperations = [
+        { $match: matchOperation },
+        { $lookup: lookupOperation },
+        { $project: projectOperation }
+      ];
+      const followers = await followersCollection
+        .aggregate(aggOperations)
+        .toArray();
+      if (followers) {
+        const followersWithAvatars = followers.map(follower => {
+          const user = new User(follower, true);
+          return {
+            username: follower.username,
+            avatar: user.avatar
+          };
+        });
+        resolve(followersWithAvatars);
+      } else {
+        reject();
+      }
+    } catch {
+      reject();
+    }
+  });
 };
 
 module.exports = Follow;

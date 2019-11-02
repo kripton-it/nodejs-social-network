@@ -12,6 +12,8 @@ const {
   mustBeLoggedIn,
   ifUserExists,
   profilePostsScreen,
+  profileFollowersScreen,
+  profileFollowingScreen,
   sharedProfileData
 } = userController;
 const {
@@ -33,6 +35,12 @@ router.post("/logout", logout);
 
 // profile related routes
 router.get("/profile/:username", ifUserExists, sharedProfileData, profilePostsScreen);
+router.get(
+  "/profile/:username/followers", ifUserExists, sharedProfileData, profileFollowersScreen
+);
+router.get(
+  "/profile/:username/following", ifUserExists, sharedProfileData, profileFollowingScreen
+);
 
 // post related routes
 router.get("/create-post", mustBeLoggedIn, viewCreateScreen);

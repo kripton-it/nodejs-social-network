@@ -87,7 +87,7 @@ exports.profilePostsScreen = async (req, res) => {
     const { _id, username, avatar } = req.profileUser;
     // ask post model for posts by an author id
     const posts = await Post.findByAuthorId(_id);
-    res.render("profile", {
+    res.render("profile-posts", {
       username,
       avatar,
       posts,
@@ -95,6 +95,23 @@ exports.profilePostsScreen = async (req, res) => {
       isVisitorsProfile: req.isVisitorsProfile
     });
   } catch (error) {
+    res.render("404");
+  }
+};
+
+exports.profileFollowersScreen = async (req, res) => {
+  try {
+    const { _id, username, avatar } = req.profileUser;
+    // ask follow model for followers of user with _id
+    const followers = await Follow.getFollowersById(_id);
+    res.render("profile-followers", {
+      username,
+      avatar,
+      followers,
+      isFollowing: req.isFollowing,
+      isVisitorsProfile: req.isVisitorsProfile
+    });
+  } catch {
     res.render("404");
   }
 };
