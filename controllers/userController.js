@@ -2,13 +2,17 @@ const User = require("../models/User");
 const Post = require("../models/Post");
 const Follow = require("../models/Follow");
 
-exports.home = (req, res) => {
-  if (!req.session.user) {
+exports.home = async (req, res) => {
+  if (req.session.user) {
+    // fetch feed of posts for current user
+    const posts = await Post.getFeed(req.session.user._id);
+    res.render("home-dashboard", {
+      posts
+    });
+  } else {
     res.render("home-guest", {
       regErrors: req.flash("regErrors")
     });
-  } else {
-    res.render("home-dashboard");
   }
 };
 
