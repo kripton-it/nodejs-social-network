@@ -83,14 +83,33 @@ const server = require("http").createServer(app);
 
 const io = require("socket.io")(server);
 
+io.use((socket, next) => {
+  forEachTemplate(socket.request, socket.response, next);
+});
+
 io.on("connection", socket => {
-  socket.on("chatMessageFromClient", data => {
-    // socket - only for the source of the data
-    // io - for everyone
-    io.emit("chatMessageFromServer", {
-      message: data.message
+  const { user } = socket.request.session;
+  if (user) {
+    socket.on("chatMessageFromClient", ({ message }) => {
+      const { username, avatar } = user;
+      // socket - only for the source of the data
+      socket.emit("welcome", {
+        username,
+        avatar
+      });
+      // io - for everyone
+      // socket.broadcast - for everyone except the source of the data
+      socket.broadcast.emit("chatMessageFromServer", {
+        message: sanitizeHTML(message, {
+          allowedTags: [],
+          allowedAttributes: {}
+        }),
+        username,
+        avatar
+      });
     });
-  });
+  } else {
+  }
 });
 
 module.exports = server;
