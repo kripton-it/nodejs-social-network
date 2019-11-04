@@ -4,7 +4,10 @@ export default class Chat {
     this.wrapper = document.querySelector("#chat-wrapper");
     this.insertHTML();
     this.openIcon = document.querySelector(".header-chat-icon");
-    this.closeIcon = document.querySelector(".chat-title-bar-close");
+    this.closeIcon = this.wrapper.querySelector(".chat-title-bar-close");
+    this.chatField = this.wrapper.querySelector("#chatField");
+    this.chatForm = this.wrapper.querySelector("#chatForm");
+    this.socket = null;
     this.addEventListeners();
   }
 
@@ -19,13 +22,30 @@ export default class Chat {
       evt.preventDefault();
       this.hideChat();
     });
+
+    this.chatForm.addEventListener("submit", evt => {
+      evt.preventDefault();
+      this.sendMessageToServer();
+    });
   }
 
   // Methods
-  openConnection() {
-
+  sendMessageToServer() {
+    this.socket.emit("chatMessageFromClient", {
+      message: this.chatField.value
+    });
+    // this.chatField.value = "";
+    this.chatForm.reset();
+    this.chatField.focus();
   }
-  
+
+  openConnection() {
+    this.socket = io();
+    this.socket.on("chatMessageFromServer", data => {
+      console.log(data.message);
+    });
+  }
+
   showChat() {
     if (!this.openedYet) {
       // open connection only if this is a first opening
@@ -33,9 +53,9 @@ export default class Chat {
     }
     this.openedYet = true;
     this.wrapper.classList.add("chat--visible");
-    /* setTimeout(() => {
-      this.searchInput.focus();
-    }, 30); */
+    setTimeout(() => {
+      this.chatField.focus();
+    }, 30);
   }
 
   hideChat() {
@@ -170,7 +190,7 @@ export default class Chat {
 //       this.resultsArea.innerHTML = DOMPurify.sanitize(`
 //         <div class="list-group shadow-sm">
 //           <div class="list-group-item active">
-//             <strong>Search Results</strong> 
+//             <strong>Search Results</strong>
 //             (${posts.length} item${posts.length > 1 ? "s" : ""} found)
 //           </div>
 //           ${posts.map(this.getResultTemplate).join("")}
@@ -218,7 +238,7 @@ export default class Chat {
 //         <div class="live-search-results"></div>
 //       </div>
 //     </div>
-//   </div>  
+//   </div>
 //     `;
 //   }
 

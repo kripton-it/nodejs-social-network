@@ -13,8 +13,8 @@ const mongoHandler = (error, client) => {
     console.log("Error happened: ", error);
   } else {
     module.exports = client;
-    const app = require("./app");
-    app.listen(process.env.PORT);
+    const server = require("./server");
+    server.listen(process.env.PORT);
     console.log(process.env.PORT);
   }
 };

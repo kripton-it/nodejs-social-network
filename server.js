@@ -79,4 +79,18 @@ app.set("view engine", "ejs");
 
 app.use("/", router);
 
-module.exports = app;
+const server = require("http").createServer(app);
+
+const io = require("socket.io")(server);
+
+io.on("connection", socket => {
+  socket.on("chatMessageFromClient", data => {
+    // socket - only for the source of the data
+    // io - for everyone
+    io.emit("chatMessageFromServer", {
+      message: data.message
+    });
+  });
+});
+
+module.exports = server;
