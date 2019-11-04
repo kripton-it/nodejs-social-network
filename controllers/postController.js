@@ -1,7 +1,9 @@
 const Post = require("../models/Post");
 
 exports.viewCreateScreen = (req, res) => {
-  res.render("create-post");
+  res.render("create-post", {
+    title: "Create a new post"
+  });
 };
 
 exports.create = async (req, res) => {
@@ -25,9 +27,14 @@ exports.create = async (req, res) => {
 exports.viewSingle = async (req, res) => {
   try {
     const post = await Post.findSingleById(req.params.id, req.visitorId);
-    res.render("single-post-screen", { post });
+    res.render("single-post-screen", {
+      post,
+      title: post.title
+    });
   } catch (error) {
-    res.render("404");
+    res.render("404", {
+      title: "Page not found"
+    });
   }
 };
 
@@ -35,7 +42,10 @@ exports.viewEditScreen = async (req, res) => {
   try {
     const post = await Post.findSingleById(req.params.id, req.visitorId);
     if (post.isVisitorOwner) {
-      res.render("edit-post", { post });
+      res.render("edit-post", {
+        post,
+        title: "Edit post"
+      });
     } else {
       req.flash("errors", "You don't have permission to perform that action");
       req.session.save(() => {
@@ -43,7 +53,9 @@ exports.viewEditScreen = async (req, res) => {
       });
     }
   } catch (error) {
-    res.render("404");
+    res.render("404", {
+      title: "Page not found"
+    });
   }
 };
 

@@ -7,11 +7,13 @@ exports.home = async (req, res) => {
     // fetch feed of posts for current user
     const posts = await Post.getFeed(req.session.user._id);
     res.render("home-dashboard", {
-      posts
+      posts,
+      title: "Dashboard"
     });
   } else {
     res.render("home-guest", {
-      regErrors: req.flash("regErrors")
+      regErrors: req.flash("regErrors"),
+      title: "Welcome"
     });
   }
 };
@@ -82,7 +84,9 @@ exports.ifUserExists = async (req, res, next) => {
     req.profileUser = await User.findByUsername(req.params.username);
     next();
   } catch (error) {
-    res.render("404");
+    res.render("404", {
+      title: "Page not found"
+    });
   }
 };
 
@@ -92,6 +96,7 @@ exports.profilePostsScreen = async (req, res) => {
     // ask post model for posts by an author id
     const posts = await Post.findByAuthorId(_id);
     res.render("profile-posts", {
+      title: `Profile for ${username}`,
       username,
       avatar,
       posts,
@@ -101,7 +106,9 @@ exports.profilePostsScreen = async (req, res) => {
       count: req.count
     });
   } catch (error) {
-    res.render("404");
+    res.render("404", {
+      title: "Page not found"
+    });
   }
 };
 
@@ -111,6 +118,7 @@ exports.profileFollowersScreen = async (req, res) => {
     // ask follow model for followers of user with _id
     const followers = await Follow.getFollowersById(_id);
     res.render("profile-followers", {
+      title: `Followers of ${username}`,
       username,
       avatar,
       followers,
@@ -120,7 +128,9 @@ exports.profileFollowersScreen = async (req, res) => {
       count: req.count
     });
   } catch {
-    res.render("404");
+    res.render("404", {
+      title: "Page not found"
+    });
   }
 };
 
@@ -130,6 +140,7 @@ exports.profileFollowingScreen = async (req, res) => {
     // ask follow model for users which that user is following
     const following = await Follow.getFollowingById(_id);
     res.render("profile-following", {
+      title: `Following by ${username}`,
       username,
       avatar,
       following,
@@ -139,7 +150,9 @@ exports.profileFollowingScreen = async (req, res) => {
       count: req.count
     });
   } catch {
-    res.render("404");
+    res.render("404", {
+      title: "Page not found"
+    });
   }
 };
 
