@@ -9,7 +9,6 @@ export default class RegistrationForm {
       element: this.form.querySelector("#username-register"),
       previousValue: "",
       timer: null,
-      delay: 5000,
       minLength: 3,
       maxLength: 30,
       invalid: false,
@@ -17,18 +16,26 @@ export default class RegistrationForm {
     };
     this.email = {
       element: this.form.querySelector("#email-register"),
-      previousValue: ""
+      previousValue: "",
+      timer: null,
+      invalid: false,
+      isUnique: true
     };
     this.password = {
       element: this.form.querySelector("#password-register"),
       previousValue: ""
     };
+    this.delay = 500;
     this.addEventListeners();
   }
 
   addEventListeners() {
     this.username.element.addEventListener("keyup", () => {
       this.isFieldChanged(this.username, this.usernameHandler);
+    });
+
+    this.email.element.addEventListener("keyup", () => {
+      this.isFieldChanged(this.email, this.emailHandler);
     });
   }
 
@@ -40,6 +47,8 @@ export default class RegistrationForm {
     }
   }
 
+  // username
+
   usernameHandler() {
     this.username.invalid = false;
     this.usernameImmediately();
@@ -47,7 +56,7 @@ export default class RegistrationForm {
     this.username.timer && clearTimeout(this.username.timer);
     this.username.timer = setTimeout(
       () => this.usernameAfterDelay(),
-      this.username.delay
+      this.delay
     );
   }
 
@@ -86,6 +95,8 @@ export default class RegistrationForm {
     alertElement.innerHTML = "";
   }
 
+  // проверка с задержкой
+
   usernameAfterDelay() {
     const { value, minLength } = this.username.element;
 
@@ -111,6 +122,50 @@ export default class RegistrationForm {
             this.username.isUnique = false;
           } else {
             this.username.isUnique = true;
+          }
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    }
+  }
+
+  // email
+
+  emailHandler() {
+    this.email.invalid = false;
+    // очистить таймер, если в нём что-то есть
+    this.email.timer && clearTimeout(this.email.timer);
+    this.email.timer = setTimeout(
+      () => this.emailAfterDelay(),
+      this.delay
+    );
+  }
+
+  emailAfterDelay() {
+    const { value } = this.email.element;
+
+    if (!/^\S+@\S+$/.test(value)) {
+      const message = "You must provide a valid email address";
+      this.showValidationError(this.email, message);
+    }
+
+    if (!this.email.invalid) {
+      const url = "/doesEmailExist";
+      const data = {
+        email: value
+      };
+
+      axios
+        .post(url, data)
+        .then(response => {
+          if (response.data) {
+            const message = "That email is already being used!";
+            this.showValidationError(this.email, message);
+            this.email.isUnique = false;
+          } else {
+            this.hideValidationError(this.email);
+            this.email.isUnique = true;
           }
         })
         .catch(error => {

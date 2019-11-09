@@ -200,4 +200,10 @@ exports.doesUsernameExist = async (req, res) => {
     // если не существует
     res.json(false);
   }
-}
+};
+
+exports.doesEmailExist = async (req, res) => {
+  const doesEmailExist = await User.doesEmailExist(req.body.email);
+  // если существует
+  res.json(doesEmailExist);
+};

@@ -10,6 +10,7 @@ const {
   login,
   logout,
   doesUsernameExist,
+  doesEmailExist,
   mustBeLoggedIn,
   ifUserExists,
   profilePostsScreen,
@@ -34,6 +35,7 @@ router.post("/register", register);
 router.post("/login", login);
 router.post("/logout", logout);
 router.post("/doesUsernameExist", doesUsernameExist);
+router.post("/doesEmailExist", doesEmailExist);
 
 // profile related routes
 router.get("/profile/:username", ifUserExists, sharedProfileData, profilePostsScreen);

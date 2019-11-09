@@ -159,4 +159,20 @@ User.findByUsername = username => {
   });
 };
 
+User.doesEmailExist = email => {
+  return new Promise(async (resolve, reject) => {
+    if (typeof email !== "string") {
+      resolve(false);
+      return;
+    }
+
+    try {
+      const userDoc = await usersCollection.findOne({ email });
+      resolve(!!userDoc);
+    } catch (error) {
+      reject();
+    }
+  });
+};
+
 module.exports = User;
