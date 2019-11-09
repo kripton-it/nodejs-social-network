@@ -6,6 +6,7 @@ export default class Search {
   // 2. Keep track of any useful data
   constructor() {
     this.insertHTML();
+    this._csrf = document.querySelector("input[name='_csrf']").value;
     this.openIcon = document.querySelector(".header-search-icon");
     this.overlay = document.querySelector(".search-overlay");
     this.closeIcon = document.querySelector(".close-live-search");
@@ -88,7 +89,8 @@ export default class Search {
   sendRequest() {
     axios
       .post("/search", {
-        searchTerm: this.searchInput.value
+        searchTerm: this.searchInput.value,
+        _csrf: this._csrf
       })
       .then(response => {
         this.renderResultsHTML(response.data);

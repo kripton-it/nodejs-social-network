@@ -128,7 +128,7 @@ Follow.getFollowersById = function(id) {
         { $lookup: lookupOperation },
         { $project: projectOperation }
       ];
-      const followers = await followersCollection
+      const followers = await followsCollection
         .aggregate(aggOperations)
         .toArray();
       if (followers) {
@@ -174,7 +174,7 @@ Follow.getFollowingById = function(id) {
         { $lookup: lookupOperation },
         { $project: projectOperation }
       ];
-      const following = await followersCollection
+      const following = await followsCollection
         .aggregate(aggOperations)
         .toArray();
       if (followers) {
@@ -197,7 +197,7 @@ Follow.getFollowingById = function(id) {
 
 Follow.countFollowersByAuthor = id => {
   return new Promise(async (resolve, reject) => {
-    const count = await followersCollection.countDocuments({
+    const count = await followsCollection.countDocuments({
       followedId: id
     });
     resolve(count);
@@ -206,7 +206,7 @@ Follow.countFollowersByAuthor = id => {
 
 Follow.countFollowingByAuthor = id => {
   return new Promise(async (resolve, reject) => {
-    const count = await followersCollection.countDocuments({
+    const count = await followsCollection.countDocuments({
       authorId: id
     });
     resolve(count);

@@ -3,6 +3,7 @@ import axios from "axios";
 export default class RegistrationForm {
   constructor() {
     this.form = document.querySelector("#registration-form");
+    this._csrf = this.form.querySelector("input[name='_csrf']").value;
     this.allFields = this.form.querySelectorAll(".form-control");
     this.insertValidationElements();
     this.username = {
@@ -141,7 +142,8 @@ export default class RegistrationForm {
     if (!this.username.invalid) {
       const url = "/doesUsernameExist";
       const data = {
-        username: this.username.element.value
+        username: this.username.element.value,
+        _csrf: this._csrf
       };
 
       axios
@@ -181,7 +183,8 @@ export default class RegistrationForm {
     if (!this.email.invalid) {
       const url = "/doesEmailExist";
       const data = {
-        email: value
+        email: value,
+        _csrf: this._csrf
       };
 
       axios

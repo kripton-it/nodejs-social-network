@@ -4,7 +4,7 @@ const MongoStore = require("connect-mongo")(session);
 const flash = require("connect-flash");
 const markdown = require("marked");
 const sanitizeHTML = require("sanitize-html");
-
+const csrf = require("csurf");
 const app = express();
 
 app.use(
@@ -77,7 +77,32 @@ app.use(express.static("public"));
 app.set("views", "views");
 app.set("view engine", "ejs");
 
+// защита от Cross-Site Request Forgery:
+// даёт возможность генерить токены
+// и проверять их наличие при обработке любых POST-запросов
+app.use(csrf());
+const setCsrfToken = (req, res, next) => {
+  res.locals.csrfToken = req.csrfToken();
+  next();
+};
+app.use(setCsrfToken);
+
 app.use("/", router);
+
+// обработка несовпавшего токена
+const checkCsrfError = (err, req, res, next) => {
+  if (err) {
+    if (err.code === "EBADCSRFTOKEN") {
+      req.flash("errors", "Attempt of Cross-Site Request Forgery was detected");
+      req.session.save(() => {
+        res.redirect("/");
+      });
+    } else {
+      res.render("404");
+    }
+  }
+};
+app.use(checkCsrfError);
 
 const server = require("http").createServer(app);
 
