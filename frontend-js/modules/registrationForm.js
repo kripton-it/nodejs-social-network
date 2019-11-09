@@ -12,30 +12,55 @@ export default class RegistrationForm {
       minLength: 3,
       maxLength: 30,
       invalid: false,
-      isUnique: true
+      isUnique: false
     };
     this.email = {
       element: this.form.querySelector("#email-register"),
       previousValue: "",
       timer: null,
       invalid: false,
-      isUnique: true
+      isUnique: false
     };
     this.password = {
       element: this.form.querySelector("#password-register"),
-      previousValue: ""
+      previousValue: "",
+      timer: null,
+      minLength: 12,
+      maxLength: 50,
+      invalid: false
     };
     this.delay = 500;
     this.addEventListeners();
   }
 
   addEventListeners() {
+    this.form.addEventListener("submit", evt => {
+      evt.preventDefault();
+      this.formSubmitHandler();
+    });
+
     this.username.element.addEventListener("keyup", () => {
+      this.isFieldChanged(this.username, this.usernameHandler);
+    });
+
+    this.username.element.addEventListener("blur", () => {
       this.isFieldChanged(this.username, this.usernameHandler);
     });
 
     this.email.element.addEventListener("keyup", () => {
       this.isFieldChanged(this.email, this.emailHandler);
+    });
+
+    this.email.element.addEventListener("blur", () => {
+      this.isFieldChanged(this.email, this.emailHandler);
+    });
+
+    this.password.element.addEventListener("keyup", () => {
+      this.isFieldChanged(this.password, this.passwordHandler);
+    });
+
+    this.password.element.addEventListener("blur", () => {
+      this.isFieldChanged(this.password, this.passwordHandler);
     });
   }
 
@@ -44,6 +69,25 @@ export default class RegistrationForm {
     if (field.element.value !== field.previousValue) {
       handler.call(this);
       field.previousValue = field.element.value;
+    }
+  }
+
+  formSubmitHandler() {
+    this.usernameImmediately();
+    this.usernameAfterDelay();
+    this.emailAfterDelay();
+    this.passwordImmediately();
+    this.passwordAfterDelay();
+
+    const isEverythingValid =
+      this.username.isUnique &&
+      !this.username.invalid &&
+      this.email.isUnique &&
+      !this.email.invalid &&
+      !this.password.invalid;
+
+    if (isEverythingValid) {
+      this.form.submit();
     }
   }
 
@@ -80,19 +124,6 @@ export default class RegistrationForm {
     if (!this.username.invalid) {
       this.hideValidationError(this.username);
     }
-  }
-
-  showValidationError(field, message) {
-    const alertElement = field.element.nextElementSibling;
-    alertElement.innerHTML = message;
-    alertElement.classList.add("liveValidateMessage--visible");
-    field.invalid = true;
-  }
-
-  hideValidationError(field) {
-    const alertElement = field.element.nextElementSibling;
-    alertElement.classList.remove("liveValidateMessage--visible");
-    alertElement.innerHTML = "";
   }
 
   // проверка с задержкой
@@ -136,10 +167,7 @@ export default class RegistrationForm {
     this.email.invalid = false;
     // очистить таймер, если в нём что-то есть
     this.email.timer && clearTimeout(this.email.timer);
-    this.email.timer = setTimeout(
-      () => this.emailAfterDelay(),
-      this.delay
-    );
+    this.email.timer = setTimeout(() => this.emailAfterDelay(), this.delay);
   }
 
   emailAfterDelay() {
@@ -172,6 +200,59 @@ export default class RegistrationForm {
           console.error(error);
         });
     }
+  }
+
+  // password
+
+  passwordHandler() {
+    this.password.invalid = false;
+    this.passwordImmediately();
+    // очистить таймер, если в нём что-то есть
+    this.password.timer && clearTimeout(this.password.timer);
+    this.password.timer = setTimeout(
+      () => this.passwordAfterDelay(),
+      this.delay
+    );
+  }
+
+  // моментальная проверка
+
+  passwordImmediately() {
+    const { value, maxLength } = this.password.element;
+
+    if (value.length > maxLength) {
+      const message = `Password cannot exceed ${maxLength} characters!`;
+      this.showValidationError(this.password, message);
+      return;
+    }
+
+    if (!this.username.invalid) {
+      this.hideValidationError(this.username);
+    }
+  }
+
+  // проверка с задержкой
+
+  passwordAfterDelay() {
+    const { value, minLength } = this.password.element;
+
+    if (value.length < minLength) {
+      const message = `Password must be at least ${minLength} characters!`;
+      this.showValidationError(this.password, message);
+    }
+  }
+
+  showValidationError(field, message) {
+    const alertElement = field.element.nextElementSibling;
+    alertElement.innerHTML = message;
+    alertElement.classList.add("liveValidateMessage--visible");
+    field.invalid = true;
+  }
+
+  hideValidationError(field) {
+    const alertElement = field.element.nextElementSibling;
+    alertElement.classList.remove("liveValidateMessage--visible");
+    alertElement.innerHTML = "";
   }
 
   insertValidationElements() {
