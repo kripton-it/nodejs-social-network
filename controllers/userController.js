@@ -190,3 +190,14 @@ exports.sharedProfileData = async (req, res, next) => {
   };
   next();
 };
+
+exports.doesUsernameExist = async (req, res) => {
+  try {
+    await User.findByUsername(req.body.username);
+    // если существует
+    res.json(true);
+  } catch {
+    // если не существует
+    res.json(false);
+  }
+}

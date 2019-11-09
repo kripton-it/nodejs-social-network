@@ -9,6 +9,7 @@ const {
   register,
   login,
   logout,
+  doesUsernameExist,
   mustBeLoggedIn,
   ifUserExists,
   profilePostsScreen,
@@ -32,6 +33,7 @@ router.get("/", home);
 router.post("/register", register);
 router.post("/login", login);
 router.post("/logout", logout);
+router.post("/doesUsernameExist", doesUsernameExist);
 
 // profile related routes
 router.get("/profile/:username", ifUserExists, sharedProfileData, profilePostsScreen);
