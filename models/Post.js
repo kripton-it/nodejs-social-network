@@ -253,7 +253,7 @@ Post.countPostsByAuthor = id => {
   });
 };
 
-Post.getFeed = id => {
+Post.getFeed = async id => {
   // create an array of the userIds that the current user follows
   const followedUsers = await followsCollection.find({
     authorId: new ObjectID(id)
