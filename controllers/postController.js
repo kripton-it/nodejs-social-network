@@ -126,3 +126,14 @@ exports.apiCreate = async (req, res) => {
     res.json(errors);
   }
 };
+
+exports.apiDelete = async (req, res) => {
+  try {
+    await Post.delete(req.params.id, req.apiUser._id);
+    res.json("Post successfully deleted");
+  } catch (errors) {
+    // a post doesn't exist
+    // current visitor is not the owner of the post
+    res.json(errors);
+  }
+};
