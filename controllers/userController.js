@@ -1,3 +1,4 @@
+const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Post = require("../models/Post");
 const Follow = require("../models/Follow");
@@ -214,8 +215,15 @@ exports.apiLogin = async (req, res) => {
   const user = new User(req.body);
   try {
     await user.login();
-    res.json("True")
+    const data = {
+      _id: user.data._id
+    }
+    const options = {
+      // по умолчанию - бесконечность
+      expiresIn: '30d' // 30 дней
+    }
+    res.json(jwt.sign(data, process.env.JWTSECRET, options));
   } catch (error) {
-    res.json("False")
+    res.json("False");
   }
 };
