@@ -114,3 +114,15 @@ exports.search = async (req, res) => {
     res.json([]);
   }
 };
+
+// API
+
+exports.apiCreate = async (req, res) => {
+  const post = new Post(req.body, req.apiUser._id);
+  try {
+    await post.create();
+    res.json("New post successfully created");
+  } catch (errors) {
+    res.json(errors);
+  }
+};

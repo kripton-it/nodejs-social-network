@@ -227,3 +227,12 @@ exports.apiLogin = async (req, res) => {
     res.json("False");
   }
 };
+
+exports.apiMustBeLoggedIn = (req, res, next) => {
+  try {
+    req.apiUser = jwt.verify(req.body.token, process.env.JWTSECRET)
+    next()
+  } catch {
+    res.json("Invalid token")
+  }
+};
