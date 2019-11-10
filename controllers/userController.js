@@ -217,11 +217,11 @@ exports.apiLogin = async (req, res) => {
     await user.login();
     const data = {
       _id: user.data._id
-    }
+    };
     const options = {
       // по умолчанию - бесконечность
-      expiresIn: '30d' // 30 дней
-    }
+      expiresIn: "30d" // 30 дней
+    };
     res.json(jwt.sign(data, process.env.JWTSECRET, options));
   } catch (error) {
     res.json("False");
@@ -230,9 +230,33 @@ exports.apiLogin = async (req, res) => {
 
 exports.apiMustBeLoggedIn = (req, res, next) => {
   try {
-    req.apiUser = jwt.verify(req.body.token, process.env.JWTSECRET)
-    next()
+    req.apiUser = jwt.verify(req.body.token, process.env.JWTSECRET);
+    next();
   } catch {
-    res.json("Invalid token")
+    res.json("Invalid token");
   }
+};
+
+exports.apiGetPostsByUsername = async (req, res) => {
+  try {
+    const userDoc = await User.findByUsername(req.params.username);
+    const posts = await Post.findByAuthorId(userDoc._id);
+    res.json(posts);
+  } catch {
+    res.json("Invalid user requested");
+  }
+  /* const user = new User(req.body);
+  try {
+    await user.login();
+    const data = {
+      _id: user.data._id
+    }
+    const options = {
+      // по умолчанию - бесконечность
+      expiresIn: '30d' // 30 дней
+    }
+    res.json(jwt.sign(data, process.env.JWTSECRET, options));
+  } catch (error) {
+    res.json("False");
+  } */
 };
