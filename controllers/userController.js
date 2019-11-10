@@ -207,3 +207,15 @@ exports.doesEmailExist = async (req, res) => {
   // если существует
   res.json(doesEmailExist);
 };
+
+// API
+
+exports.apiLogin = async (req, res) => {
+  const user = new User(req.body);
+  try {
+    await user.login();
+    res.json("True")
+  } catch (error) {
+    res.json("False")
+  }
+};

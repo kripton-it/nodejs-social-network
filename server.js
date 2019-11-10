@@ -7,20 +7,30 @@ const sanitizeHTML = require("sanitize-html");
 const csrf = require("csurf");
 const app = express();
 
+const apiRouter = require("./router-api");
+
 app.use(
-  session({
-    secret: "NodeJS is so cool",
-    store: new MongoStore({
-      client: require("./db")
-    }),
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // 1 сутки
-      httpOnly: true
-    }
+  express.urlencoded({
+    extended: false
   })
 );
+app.use(express.json());
+app.use("/api", apiRouter);
+
+const sessionOptions = {
+  secret: "NodeJS is so cool",
+  store: new MongoStore({
+    client: require("./db")
+  }),
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24, // 1 сутки
+    httpOnly: true
+  }
+};
+
+app.use(session(sessionOptions));
 
 app.use(flash());
 
@@ -65,13 +75,6 @@ const forEachTemplate = (req, res, next) => {
 app.use(forEachTemplate);
 
 const router = require("./router");
-
-app.use(
-  express.urlencoded({
-    extended: false
-  })
-);
-app.use(express.json());
 
 app.use(express.static("public"));
 app.set("views", "views");
